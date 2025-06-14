@@ -57,7 +57,7 @@ class DioService {
                 final newRefresh = response.data['refresh'];
 
                 final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                authProvider.updateTokens(newAccess, newRefresh);
+                await authProvider.setTokens(accessToken: newAccess, refreshToken: newRefresh);
 
                 // Powtórz poprzednie żądanie z nowym tokenem
                 final opts = error.requestOptions;

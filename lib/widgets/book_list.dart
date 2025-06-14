@@ -9,7 +9,9 @@ import '../model/user.dart';
 import '../service/user_service.dart';
 
 class BookListScreen extends StatefulWidget {
-  const BookListScreen({super.key});
+  final bool showRecommendations;
+
+  const BookListScreen({super.key, this.showRecommendations = false});
 
   @override
   State<BookListScreen> createState() => _BookListScreenState();
@@ -23,37 +25,42 @@ class _BookListScreenState extends State<BookListScreen> {
   @override
   void initState() {
     super.initState();
-    loadPage();
-    loadUser();
+    loadUserAndPage();
   }
 
-  Future<void> loadPage({String? url}) async {
+  Future<void> loadUserAndPage({String? url}) async {
+    await loadUser();
     setState(() => _isLoading = true);
-    final page = await BookService.getBookList(pageUrl: url);
+    PaginatedPage<Book>? page;
+    page =
+        widget.showRecommendations
+            ? await BookService.getRecommendationsForUser(_user!)
+            : await BookService.getBookList(pageUrl: url);
     setState(() {
       _page = page;
       _isLoading = false;
     });
   }
-  
+
   Future<void> loadUser() async {
     final fetchedUser = await UserService.getCurrentUser();
     setState(() {
       _user = fetchedUser;
     });
   }
-  
+
   AppBar buildAppBar(BuildContext context) {
     return AppBar(
-      title: const Text('Lista książek'),
+      title: Text(widget.showRecommendations ? 'Twoje rekomendacje' : 'Lista książek'),
       actions: [
-        if (_user != null)
+        if (_user != null && !widget.showRecommendations)
           GestureDetector(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => UserProfileScreen(user: _user!, isMyProfile: true,),
+                  builder:
+                      (_) => UserProfileScreen(user: _user!, isMyProfile: true),
                 ),
               );
             },
@@ -73,65 +80,67 @@ class _BookListScreenState extends State<BookListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildAppBar(context),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _page == null || _page!.items.isEmpty
-          ? const Center(child: Text('Brak książek do wyświetlenia.'))
-          : Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: _page!.items.length,
-              itemBuilder: (context, index) {
-                final book = _page!.items[index];
-                return ListTile(
-                  leading: Image.network(
-                    book.imageUrl,
-                    width: 50,
-                    height: 70,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.broken_image),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _page == null || _page!.items.isEmpty
+              ? const Center(child: Text('Brak książek do wyświetlenia.'))
+              : Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _page!.items.length,
+                      itemBuilder: (context, index) {
+                        final book = _page!.items[index];
+                        return ListTile(
+                          leading: Image.network(
+                            book.imageUrl,
+                            width: 50,
+                            height: 70,
+                            fit: BoxFit.cover,
+                            errorBuilder:
+                                (_, __, ___) => const Icon(Icons.broken_image),
+                          ),
+                          title: Text(book.title),
+                          subtitle: Text(
+                            '${book.author.name}    Ocena: ${book.avgRating}',
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BookDetailScreen(book: book),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
-                  title: Text(book.title),
-                  subtitle: Text('${book.author.name}    Ocena: ${book.avgRating}'),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BookDetailScreen(book: book),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (_page!.previousUrl != null)
-                  ElevatedButton(
-                    onPressed: () =>
-                        loadPage(url: _page!.previousUrl),
-                    child: const Text('Poprzednia strona'),
-                  )
-                else
-                  const SizedBox(),
-                if (_page!.nextUrl != null)
-                  ElevatedButton(
-                    onPressed: () => loadPage(url: _page!.nextUrl),
-                    child: const Text('Następna strona'),
-                  )
-                else
-                  const SizedBox(),
-              ],
-            ),
-          ),
-        ],
-      ),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (_page!.previousUrl != null)
+                          ElevatedButton(
+                            onPressed: () => loadUserAndPage(url: _page!.previousUrl),
+                            child: const Text('Poprzednia strona'),
+                          )
+                        else
+                          const SizedBox(),
+                        if (_page!.nextUrl != null)
+                          ElevatedButton(
+                            onPressed: () => loadUserAndPage(url: _page!.nextUrl),
+                            child: const Text('Następna strona'),
+                          )
+                        else
+                          const SizedBox(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
     );
   }
 }

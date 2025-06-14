@@ -44,4 +44,16 @@ class UserService {
     }
     return false;
   }
+
+  static Future<bool> updateProfilePicUrl(String newProfilePicUrl) async {
+    try {
+      final dio = (await DioService.getInstance()).dio;
+      final response = await dio.patch('api/user/update-image/', data: {'profile_image_url': newProfilePicUrl});
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('updateProfilePicUrl error: $e');
+    }
+    return false;
+  }
 }

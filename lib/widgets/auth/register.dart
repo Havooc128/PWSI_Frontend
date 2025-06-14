@@ -24,7 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _key.currentState!.save();
     if (await AuthService.register(context, _enteredEmail, _enteredUsername, _enteredPassword, _enteredPasswordConfirmation)) {
       sendSnackBar(context, 'Pomyślnie zarejestrowano!');
-      GoRouter.of(context).go('/main');
+      GoRouter.of(context).go('/book_list');
     }
     else {
       sendSnackBar(context, 'Rejestracja nie powiodła się!');

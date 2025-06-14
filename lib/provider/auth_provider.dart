@@ -34,11 +34,6 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateTokens(String access, String refresh) {
-    _accessToken = access;
-    _refreshToken = refresh;
-    notifyListeners();
-  }
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();

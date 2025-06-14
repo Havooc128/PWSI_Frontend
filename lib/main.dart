@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 
 import 'package:pwsi/widgets/auth/auth_screen.dart';
 import 'package:pwsi/widgets/book_list.dart';
-import 'package:pwsi/widgets/main_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -46,12 +45,8 @@ final _router = GoRouter(
     return null;
   },
   routes: [
-    GoRoute(path: '/auth', builder: (context, state) => const AuthScreen()),
-    GoRoute(path: '/main', builder: (context, state) => const MainScreen()),
-    GoRoute(
-      path: '/book_list',
-      builder: (context, state) => const BookListScreen(),
-    ),
+    GoRoute(path: '/auth', builder: (_, __) => const AuthScreen()),
+    GoRoute(path: '/book_list', builder: (_, __) => const BookListScreen()),
   ],
 );
 
