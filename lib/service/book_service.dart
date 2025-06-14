@@ -5,7 +5,6 @@ import '../model/user.dart';
 import 'dio_service.dart';
 
 class BookService {
-
   // Lista książek
   static Future<PaginatedPage<Book>?> getBookList({String? pageUrl}) async {
     try {
@@ -39,18 +38,9 @@ class BookService {
     return null;
   }
 
-  static Future<PaginatedPage<Book>?> getRecommendationsForUser(User user, {String? pageUrl}) async {
-    try {
-      final dio = (await DioService.getInstance()).dio;
-
-      final response = await dio.get(pageUrl ?? 'books/user/${user.id}/recommendations/');
-
-      if (response.statusCode == 200) {
-        return PaginatedPage.fromJson(response.data, Book.fromJson);
-      }
-    } catch (e) {
-      print('getRecommendationsForUser error: $e');
-    }
-    return null;
-  }
+  static Future<PaginatedPage<Book>?> getRecommendationsForUser(
+    User user, {
+    String? pageUrl,
+  }) async =>
+      getBookList(pageUrl: pageUrl ?? 'books/user/${user.id}/recommendations');
 }
